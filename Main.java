@@ -395,13 +395,28 @@ public class Main{
 
     public static void main(String[] args)
     {
-        int selection=3;
+        if (args[0] == "-S") {
+            if (args[1] == "1") {
+                int selection = 1;
+            }
+            if (args[1] == "2") {
+                int selection = 2;
+            }
+            if (args[1] == "3") {
+                int selection = 3;
+            }
+        }
+        else {
+            System.out.println("Something went wrong :(");
+        }
+        int selection = 2;
         Random randominteger = new Random();
         int N = randominteger.nextInt(4)+3; //Domains
         int M = randominteger.nextInt(4)+3; //Files
 
         if(selection==1) //Access Matrix
         {
+            System.out.println("Access control scheme: Access Matrix");
             String[][] arrayMain = FunctMatrix(N, M);
             for (int i = 0; i < N; i++){
                 establishMeowl othermeowl = new establishMeowl(arrayMain);
@@ -411,6 +426,7 @@ public class Main{
         }
         if(selection==2) //Access Lists
         {
+            System.out.println("Access control scheme: Access List");
             HashMap<Integer, String>[] accessList = AccessList(N, M);
             for (int i = 0; i < N; i++){
                 establishMeowl othermeowl = new establishMeowl(accessList, N, selection);
@@ -420,12 +436,17 @@ public class Main{
         }
         if(selection==3) //Capability Lists
         {
+            System.out.println("Access control scheme: Capability List");
             HashMap<Integer, String>[] capabilityList = CapabilityList(N, M);
             for (int i = 0; i < N; i++){
                 establishMeowl othermeowl = new establishMeowl(capabilityList, M, selection);
                 Thread aUser = new Thread(othermeowl);
                 aUser.start();
             }
+        }
+        else
+        {
+            System.out.println("Use the numbers 1, 2, or 3 :(");
         }
     }
 }
