@@ -2,6 +2,248 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
 
+public class Main{
+
+    public static void main(String[] args)
+    {
+        int selection = 0;
+        if(args.length!=0)
+        {
+            if(args[0].equals("-S")) {
+                if (args[1].equals("1")) {
+                    selection = 1;
+                } else if (args[1].equals("2")) {
+                    selection = 2;
+                } else if (args[1].equals("3")) {
+                    selection = 3;
+                } else {
+                    System.out.println("Something went wrong :(");
+                }
+            } else {
+                System.out.println("Something went wrong :(");
+            }
+        } else {
+            System.out.println("No command line arg found.");
+        }
+        Random randominteger = new Random();
+        int N = randominteger.nextInt(4)+3; //Domains
+        int M = randominteger.nextInt(4)+3; //Files
+        System.out.println("Domain Count: "+N);
+        System.out.println("Object Count: "+M);
+
+        if(selection==1) //Access Matrix
+        {
+            System.out.println("Access control scheme: Access Matrix");
+            String[][] arrayMain = FunctMatrix(N, M);
+            for (int i = 0; i < N; i++){
+                establishMeowl othermeowl = new establishMeowl(arrayMain);
+                Thread aUser = new Thread(othermeowl);
+                aUser.start();
+            }
+        }
+        else if(selection==2) //Access Lists
+        {
+            System.out.println("Access control scheme: Access List");
+            HashMap<Integer, String>[] accessList = AccessList(N, M);
+            for (int i = 0; i < N; i++){
+                establishMeowl othermeowl = new establishMeowl(accessList, N, selection);
+                Thread aUser = new Thread(othermeowl);
+                aUser.start();
+            }
+        }
+        else if(selection==3) //Capability Lists
+        {
+            System.out.println("Access control scheme: Capability List");
+            HashMap<Integer, String>[] capabilityList = CapabilityList(N, M);
+            for (int i = 0; i < N; i++){
+                establishMeowl othermeowl = new establishMeowl(capabilityList, M, selection);
+                Thread aUser = new Thread(othermeowl);
+                aUser.start();
+            }
+        }
+        else
+        {
+            System.out.println("Use the numbers 1, 2, or 3 :(");
+        }
+    }
+
+    public static String[][] FunctMatrix(int N, int M){
+        Random randominteger = new Random();
+        String[][] thematrix = new String[N][M+N];
+
+        for(int i = 0; i < N; i++)
+        {
+            for(int j = 0; j < M+N; j++){
+                if (j < M){
+                    int canReadOrWrite = randominteger.nextInt(5);
+                    switch (canReadOrWrite){
+                        case 0:
+                            thematrix[i][j] = "R";
+                            break;
+                        case 1:
+                            thematrix[i][j] = "W";
+                            break;
+                        case 2:
+                            thematrix[i][j] = "R/W";
+                            break;
+                        case 3:
+                            thematrix[i][j] = "";
+                            break;
+                    }
+                }
+                else{
+                    int canSwitch = randominteger.nextInt(3);
+                    switch (canSwitch){
+                        case 0:
+                            thematrix[i][j] = "switch";
+                            break;
+                        case 1:
+                            thematrix[i][j] = "";
+                            break;
+                    }
+                }
+            }
+        }
+
+        // Print table header
+        System.out.printf("        ");
+        for (int i = 0; i < thematrix[0].length ; i++) {
+            if (i < thematrix[0].length - thematrix.length){
+                System.out.printf("f" + (i+1) + "        ");
+            }
+            else{
+                System.out.print("D" + (i + 1 - (thematrix[0].length - thematrix.length)) + "        ");
+            }
+        }
+
+        System.out.println();
+        System.out.println("-".repeat(10 + (thematrix[0].length * 10)));
+
+        // Print matrix rows
+        for (int i = 0; i < thematrix.length; i++) {
+            System.out.printf("D" + (i+1) + "      ");
+            for (int j = 0; j < thematrix[i].length; j++) {
+                System.out.printf("%-10s", thematrix[i][j]);
+            }
+            System.out.println();
+        }
+
+        for (int j = 0; j < thematrix[0].length; j++){
+            int randomvalue = randominteger.nextInt(3);
+            switch (randomvalue){
+                case 0:
+                    thematrix[0][j] = thematrix[0][j] + " Pink";
+                    break;
+                case 1:
+                    thematrix[0][j] = thematrix[0][j] + " Black";
+                    break;
+                case 2:
+                    thematrix[0][j] = thematrix[0][j] + " Blue";
+                    break;
+            }
+        }
+
+        return thematrix;
+    }
+
+    public static HashMap<Integer, String>[] AccessList(int N, int M){
+        Random randominteger = new Random();
+        @SuppressWarnings("unchecked")
+        HashMap<Integer, String>[] accessLists = (new HashMap[N+M]);
+        for(int i=0; i<N+M; i++)
+        {
+            accessLists[i] = new HashMap<Integer, String>();
+        }
+        for(int i=0; i<M; i++)
+        {
+            System.out.print("F"+(i+1)+"--> ");
+            for(int j=0; j<N; j++){
+                int canReadOrWrite = randominteger.nextInt(5);
+                switch (canReadOrWrite){
+                    case 0:
+                        accessLists[i].put(j, "R");
+                        System.out.print("D"+(j+1)+":R, ");
+                        break;
+                    case 1:
+                        accessLists[i].put(j, "W");
+                        System.out.print("D"+(j+1)+":W, ");
+                        break;
+                    case 2:
+                        accessLists[i].put(j, "R/W");
+                        System.out.print("D"+(j+1)+":R/W, ");
+                        break;
+                    default:
+                        break;
+                }
+            }
+            System.out.println();
+        }
+        for(int i=M; i<N+M; i++)
+        {
+            System.out.print("D"+(i-M+1)+"--> ");
+            for(int j=0; j<N; j++){
+                int canSwitch = randominteger.nextInt(3);
+                switch (canSwitch){
+                    case 0:
+                        accessLists[i].put(j, "switch");
+                        System.out.print("D"+(j+1)+":switch, ");
+                        break;
+                    default:
+                        break;
+                }
+            }
+            System.out.println();
+        }
+
+
+        return accessLists;
+    }
+
+    public static HashMap<Integer, String>[] CapabilityList(int N, int M) {
+        Random randominteger = new Random();
+        @SuppressWarnings("unchecked")
+        HashMap<Integer, String>[] capabilityLists = new HashMap[N];
+        for (int i = 0; i < N; i++) {
+            capabilityLists[i] = new HashMap<Integer, String>();
+            System.out.print("D" + (i + 1) + "--> ");
+            for (int j = 0; j < M; j++) {
+                int canReadOrWrite = randominteger.nextInt(5);
+                switch (canReadOrWrite) {
+                    case 0:
+                        capabilityLists[i].put(j, "R");
+                        System.out.print("F" + (j + 1) + ":R, ");
+                        break;
+                    case 1:
+                        capabilityLists[i].put(j, "W");
+                        System.out.print("F" + (j + 1) + ":W, ");
+                        break;
+                    case 2:
+                        capabilityLists[i].put(j, "R/W");
+                        System.out.print("F" + (j + 1) + ":R/W, ");
+                        break;
+                    default:
+                        break;
+                }
+            }
+            for (int j = M; j < N + M; j++) {
+                int canSwitch = randominteger.nextInt(3);
+                switch (canSwitch) {
+                    case 0:
+                        capabilityLists[i].put(j, "switch");
+                        System.out.print("D" + (j - M + 1) + ":switch, ");
+                        break;
+                    default:
+                        break;
+                }
+            }
+            System.out.println();
+        }
+
+
+        return capabilityLists;
+    }
+}
+
 class establishMeowl implements Runnable{
     public String[][] yayAmatrix;
     public HashMap<Integer, String>[] accessList;
@@ -211,242 +453,3 @@ class establishMeowl implements Runnable{
 
 
 
-public class Main{
-    public static String[][] FunctMatrix(int N, int M){
-        Random randominteger = new Random();
-        String[][] thematrix = new String[N][M+N];
-        System.out.println("Domain Count: "+N);
-        System.out.println("Object Count: "+M);
-
-        for(int i = 0; i < N; i++)
-        {
-            for(int j = 0; j < M+N; j++){
-                if (j < M){
-                    int canReadOrWrite = randominteger.nextInt(5);
-                    switch (canReadOrWrite){
-                        case 0:
-                            thematrix[i][j] = "R";
-                            break;
-                        case 1:
-                            thematrix[i][j] = "W";
-                            break;
-                        case 2:
-                            thematrix[i][j] = "R/W";
-                            break;
-                        case 3:
-                            thematrix[i][j] = "";
-                            break;
-                    }
-                }
-                else{
-                    int canSwitch = randominteger.nextInt(3);
-                    switch (canSwitch){
-                        case 0:
-                            thematrix[i][j] = "switch";
-                            break;
-                        case 1:
-                            thematrix[i][j] = "";
-                            break;
-                    }
-                }
-            }
-        }
-
-        // Print table header
-        System.out.printf("        ");
-        for (int i = 0; i < thematrix[0].length ; i++) {
-            if (i < thematrix[0].length - thematrix.length){
-                System.out.printf("f" + (i+1) + "        ");
-            }
-            else{
-                System.out.print("D" + (i + 1 - (thematrix[0].length - thematrix.length)) + "        ");
-            }
-        }
-
-        System.out.println();
-        System.out.println("-".repeat(10 + (thematrix[0].length * 10)));
-
-        // Print matrix rows
-        for (int i = 0; i < thematrix.length; i++) {
-            System.out.printf("D" + (i+1) + "      ");
-            for (int j = 0; j < thematrix[i].length; j++) {
-                System.out.printf("%-10s", thematrix[i][j]);
-            }
-            System.out.println();
-        }
-
-        for (int j = 0; j < thematrix[0].length; j++){
-            int randomvalue = randominteger.nextInt(3);
-            switch (randomvalue){
-                case 0:
-                    thematrix[0][j] = thematrix[0][j] + " Pink";
-                    break;
-                case 1:
-                    thematrix[0][j] = thematrix[0][j] + " Black";
-                    break;
-                case 2:
-                    thematrix[0][j] = thematrix[0][j] + " Blue";
-                    break;
-            }
-        }
-
-        return thematrix;
-    }
-
-    public static HashMap<Integer, String>[] AccessList(int N, int M){
-        Random randominteger = new Random();
-        HashMap<Integer, String>[] accessLists = new HashMap[N+M];
-        for(int i=0; i<N+M; i++)
-        {
-            accessLists[i] = new HashMap<Integer, String>();
-        }
-        for(int i=0; i<M; i++)
-        {
-            System.out.print("F"+(i+1)+"--> ");
-            for(int j=0; j<N; j++){
-                int canReadOrWrite = randominteger.nextInt(5);
-                switch (canReadOrWrite){
-                    case 0:
-                        accessLists[i].put(j, "R");
-                        System.out.print("D"+(j+1)+":R, ");
-                        break;
-                    case 1:
-                        accessLists[i].put(j, "W");
-                        System.out.print("D"+(j+1)+":W, ");
-                        break;
-                    case 2:
-                        accessLists[i].put(j, "R/W");
-                        System.out.print("D"+(j+1)+":R/W, ");
-                        break;
-                    default:
-                        break;
-                }
-            }
-            System.out.println();
-        }
-        for(int i=M; i<N+M; i++)
-        {
-            System.out.print("D"+(i-M+1)+"--> ");
-            for(int j=0; j<N; j++){
-                int canSwitch = randominteger.nextInt(3);
-                switch (canSwitch){
-                    case 0:
-                        accessLists[i].put(j, "switch");
-                        System.out.print("D"+(j+1)+":switch, ");
-                        break;
-                    default:
-                        break;
-                }
-            }
-            System.out.println();
-        }
-
-
-        return accessLists;
-    }
-
-    public static HashMap<Integer, String>[] CapabilityList(int N, int M){
-        Random randominteger = new Random();
-        HashMap<Integer, String>[] capabilityLists = new HashMap[N];
-        for(int i=0; i<N; i++)
-        {
-            capabilityLists[i] = new HashMap<Integer, String>();
-            System.out.print("D"+(i+1)+"--> ");
-            for(int j=0; j<M; j++)
-            {
-                int canReadOrWrite = randominteger.nextInt(5);
-                switch (canReadOrWrite){
-                    case 0:
-                        capabilityLists[i].put(j, "R");
-                        System.out.print("F"+(j+1)+":R, ");
-                        break;
-                    case 1:
-                        capabilityLists[i].put(j, "W");
-                        System.out.print("F"+(j+1)+":W, ");
-                        break;
-                    case 2:
-                        capabilityLists[i].put(j, "R/W");
-                        System.out.print("F"+(j+1)+":R/W, ");
-                        break;
-                    default:
-                        break;
-                }
-            }
-            for(int j=M; j<N+M; j++)
-            {
-                int canSwitch = randominteger.nextInt(3);
-                switch (canSwitch){
-                    case 0:
-                        capabilityLists[i].put(j, "switch");
-                        System.out.print("D"+(j-M+1)+":switch, ");
-                        break;
-                    default:
-                        break;
-                }
-            }
-            System.out.println();
-        }
-
-
-
-
-        return capabilityLists;
-    }
-
-    public static void main(String[] args)
-    {
-        if (args[0] == "-S") {
-            if (args[1] == "1") {
-                int selection = 1;
-            }
-            if (args[1] == "2") {
-                int selection = 2;
-            }
-            if (args[1] == "3") {
-                int selection = 3;
-            }
-        }
-        else {
-            System.out.println("Something went wrong :(");
-        }
-        int selection = 2;
-        Random randominteger = new Random();
-        int N = randominteger.nextInt(4)+3; //Domains
-        int M = randominteger.nextInt(4)+3; //Files
-
-        if(selection==1) //Access Matrix
-        {
-            System.out.println("Access control scheme: Access Matrix");
-            String[][] arrayMain = FunctMatrix(N, M);
-            for (int i = 0; i < N; i++){
-                establishMeowl othermeowl = new establishMeowl(arrayMain);
-                Thread aUser = new Thread(othermeowl);
-                aUser.start();
-            }
-        }
-        if(selection==2) //Access Lists
-        {
-            System.out.println("Access control scheme: Access List");
-            HashMap<Integer, String>[] accessList = AccessList(N, M);
-            for (int i = 0; i < N; i++){
-                establishMeowl othermeowl = new establishMeowl(accessList, N, selection);
-                Thread aUser = new Thread(othermeowl);
-                aUser.start();
-            }
-        }
-        if(selection==3) //Capability Lists
-        {
-            System.out.println("Access control scheme: Capability List");
-            HashMap<Integer, String>[] capabilityList = CapabilityList(N, M);
-            for (int i = 0; i < N; i++){
-                establishMeowl othermeowl = new establishMeowl(capabilityList, M, selection);
-                Thread aUser = new Thread(othermeowl);
-                aUser.start();
-            }
-        }
-        else
-        {
-            System.out.println("Use the numbers 1, 2, or 3 :(");
-        }
-    }
-}
